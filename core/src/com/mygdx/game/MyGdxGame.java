@@ -93,7 +93,7 @@ public class MyGdxGame extends ApplicationAdapter {
 
 	public void spawnBullet(Vector3 position){
 		// spawns bullet
-		Projectile bullet = new Projectile(10,"blue");
+		Projectile bullet = new Projectile(500,"blue");
 		bullet.x = position.x;
 		bullet.y = position.y + 40;
 		bullet.width=2;
@@ -103,7 +103,7 @@ public class MyGdxGame extends ApplicationAdapter {
 
 	public void spawnBullet(Vector3 position, String team, Array<Projectile> projectileArray){
 		// spawns bullet, works for all teams
-		Projectile bullet = new Projectile(10,team);
+		Projectile bullet = new Projectile(500,team);
 		bullet.x = position.x;
 		bullet.y = position.y;
 		bullet.width=2;
@@ -300,6 +300,11 @@ public class MyGdxGame extends ApplicationAdapter {
 		// Handles enemies
 		for (Iterator<Actor> iter = enemies.iterator(); iter.hasNext(); ){
 			Actor enemy = iter.next();
+			enemy.y -= 200 * Gdx.graphics.getDeltaTime();
+			if (enemy.y <= 0){
+				iter.remove();
+				continue;
+			}
 			if (enemy.health <= 0){
 				iter.remove();
 			}
@@ -345,7 +350,7 @@ public class MyGdxGame extends ApplicationAdapter {
 		}
 
 		public MiGSpawner(){
-			delay = 10;
+			delay = 3;
 		}
 	}
 }
