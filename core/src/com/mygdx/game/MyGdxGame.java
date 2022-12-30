@@ -14,6 +14,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 
 public class MyGdxGame extends ApplicationAdapter {
 
@@ -29,6 +30,7 @@ public class MyGdxGame extends ApplicationAdapter {
 	private Texture bulletTexture;
 	private Texture AMRAAMTexture;
 	private Texture MIG21Texture;
+
 	// Audio
 	private Sound cannonSound;
 	private Sound cannonEndSound;
@@ -46,6 +48,13 @@ public class MyGdxGame extends ApplicationAdapter {
 
 	// Timed events
 	private Array<timedEvent> timedEvents;
+
+	// Fonts
+	private BitmapFont font;
+
+	// Other variables
+	private int score = 0;
+	private int misses;
 
 	@Override
 	public void create () {
@@ -86,6 +95,9 @@ public class MyGdxGame extends ApplicationAdapter {
    		//F35.y = 20;
    		F35.width = 100;
    		F35.height = 100;
+
+		// load font
+		font = new BitmapFont(); // uses default font
 
 		// adds mig spawner event
 		timedEvents.add(new MiGSpawner());
@@ -133,7 +145,7 @@ public class MyGdxGame extends ApplicationAdapter {
 
 	public void spawnMissile(Vector3 position){
 		// spawns missile
-		Projectile missile = new Projectile(1000,"blue");
+		Projectile missile = new Projectile(10000,"blue");
 		missile.x = position.x;
 		missile.y = position.y;
 		missile.width=10;
@@ -143,7 +155,7 @@ public class MyGdxGame extends ApplicationAdapter {
 
 	public void spawnMissile(Vector3 position, String team, Array<Projectile> projectileArray){
 		// spawns missile, works for all teams
-		Projectile missile = new Projectile(1000,team);
+		Projectile missile = new Projectile(10000,team);
 		missile.x = position.x;
 		missile.y = position.y;
 		missile.width=10;
@@ -155,6 +167,8 @@ public class MyGdxGame extends ApplicationAdapter {
 	public void render () {
 		ScreenUtils.clear(0, 0, 10, 1);
 		batch.setProjectionMatrix(camera.combined);
+
+		camera.update();
 
 		batch.begin();
 
@@ -202,6 +216,9 @@ public class MyGdxGame extends ApplicationAdapter {
 		F35.setPosition(mousePos.x-50, mousePos.y - 50);
 		batch.draw(F35Texture, F35.x, F35.y);
 
+		// draws score
+		font.draw(batch, "Score: " + score, 0,480);
+
 		batch.end();
 
 		// moves bullets, and removes them if they are no longer on the screen, and checks if they collide with anything
@@ -244,6 +261,14 @@ public class MyGdxGame extends ApplicationAdapter {
 			if (missile.y >= 480){
 				iter.remove();
 				continue;
+			}
+
+			for(Actor enemy : enemies){
+				if (missile.overlaps(enemy)) {
+					enemy.hit(missile);
+					iter.remove();
+					break;
+				}
 			}
 		}
 
@@ -307,6 +332,7 @@ public class MyGdxGame extends ApplicationAdapter {
 			}
 			if (enemy.health <= 0){
 				iter.remove();
+				score++;
 			}
 		}
 
