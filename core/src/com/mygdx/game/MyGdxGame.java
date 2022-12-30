@@ -80,6 +80,7 @@ public class MyGdxGame extends ApplicationAdapter {
 		bullets = new Array<Projectile>(); //Player bullets
 		missiles = new Array<Projectile>(); //Player missiles
 		timedEvents = new Array<timedEvent>(); //timed events
+		enemies = new Array<Actor>();
 
    		//F35.x = 800 / 2 - 100 / 2;
    		//F35.y = 20;
@@ -231,6 +232,7 @@ public class MyGdxGame extends ApplicationAdapter {
 				if (bullet.overlaps(enemy)) {
 					enemy.hit(bullet);
 					iter.remove();
+					break;
 				}
 			}
 		}
@@ -339,6 +341,11 @@ public class MyGdxGame extends ApplicationAdapter {
 		
 		void event(){
 			spawnMig();
+			counter = 0; // resets counter
+		}
+
+		public MiGSpawner(){
+			delay = 10;
 		}
 	}
 }
