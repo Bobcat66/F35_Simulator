@@ -13,6 +13,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.math.MathUtils;
 
 public class MyGdxGame extends ApplicationAdapter {
 
@@ -42,7 +43,6 @@ public class MyGdxGame extends ApplicationAdapter {
 	// Control Variables;
 	private boolean cannonFiring = false;
 	private boolean missileCooldown = false; // Whether missile is in cooldown
-	private boolean mig21Cooldown = false; // whether mig-21 spawn is in cooldown
 
 	// Timed events
 	private Array<timedEvent> timedEvents;
@@ -85,6 +85,9 @@ public class MyGdxGame extends ApplicationAdapter {
    		//F35.y = 20;
    		F35.width = 100;
    		F35.height = 100;
+
+		// adds mig spawner event
+		timedEvents.add(new MiGSpawner());
 	}
 
 	public void spawnBullet(Vector3 position){
@@ -109,8 +112,23 @@ public class MyGdxGame extends ApplicationAdapter {
 
 	public void spawnMig(){
 		// spawns an enemy Mig-21
-		Actor MiG21 = new Actor()
+		Actor MiG21 = new Actor(10000, "red");
+		MiG21.x = MathUtils.random(0,800-56);
+		MiG21.y = 400;
+		MiG21.width = 56;
+		MiG21.height = 79;
+		enemies.add(MiG21);
 	}
+	public void spawnMig(int xArg, int yArg){
+		// spawns an enemy Mig-21 at the given coordinates
+		Actor MiG21 = new Actor(10000, "red");
+		MiG21.x = xArg;
+		MiG21.y = yArg;
+		MiG21.width = 56;
+		MiG21.height = 79;
+		enemies.add(MiG21);
+	}
+
 
 	public void spawnMissile(Vector3 position){
 		// spawns missile
@@ -173,6 +191,11 @@ public class MyGdxGame extends ApplicationAdapter {
 		for(Projectile missile : missiles) {
 			batch.draw(AMRAAMTexture, missile.x, missile.y);
 		}
+		
+		// draws enemies
+		for (Actor enemy : enemies) {
+			batch.draw(MIG21Texture, enemy.x, enemy.y);
+		}
 
 		// updates sprite position
 		F35.setPosition(mousePos.x-50, mousePos.y - 50);
@@ -203,6 +226,13 @@ public class MyGdxGame extends ApplicationAdapter {
 				//System.out.println("Collision successful"); // Debugging code
 			}
 			*/
+
+			for(Actor enemy : enemies){
+				if (bullet.overlaps(enemy)) {
+					enemy.hit(bullet);
+					iter.remove();
+				}
+			}
 		}
 
 		// moves missiles, + collision detection
@@ -265,12 +295,19 @@ public class MyGdxGame extends ApplicationAdapter {
 			event.execute();
 		}
 
+		// Handles enemies
+		for (Iterator<Actor> iter = enemies.iterator(); iter.hasNext(); ){
+			Actor enemy = iter.next();
+			if (enemy.health <= 0){
+				iter.remove();
+			}
+		}
+
 	}
 	
 	@Override
 	public void dispose () {
 		// Garbage collection
-		batch.dispose();
 		img.dispose();
 		F35Texture.dispose();
 		bulletTexture.dispose();
@@ -278,6 +315,8 @@ public class MyGdxGame extends ApplicationAdapter {
 		cannonSound.dispose();
 		cannonEndSound.dispose();
 		backgroundMusic.dispose();
+		MIG21Texture.dispose();
+		batch.dispose();
 	}
 
 	// Timed event classes
@@ -293,6 +332,13 @@ public class MyGdxGame extends ApplicationAdapter {
 			// sets missilecooldown to true when event is created
 			missileCooldown = true;
 			delay = 1;
+		}
+	}
+
+	private class MiGSpawner extends timedEvent {
+		
+		void event(){
+			spawnMig();
 		}
 	}
 }
