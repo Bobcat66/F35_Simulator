@@ -325,7 +325,7 @@ public class MyGdxGame extends ApplicationAdapter {
 		// Handles enemies
 		for (Iterator<Actor> iter = enemies.iterator(); iter.hasNext(); ){
 			Actor enemy = iter.next();
-			enemy.y -= 200 * Gdx.graphics.getDeltaTime();
+			//enemy.y -= 200 * Gdx.graphics.getDeltaTime();
 			if (enemy.y <= 0){
 				iter.remove();
 				continue;
@@ -371,12 +371,21 @@ public class MyGdxGame extends ApplicationAdapter {
 	private class MiGSpawner extends timedEvent {
 		
 		void event(){
-			spawnMig();
+			spawnMig1(400);
 			counter = 0; // resets counter
 		}
 
 		public MiGSpawner(){
-			delay = 3;
+			delay = 10;
+		}
+	}
+
+	// enemy spawning methods
+
+	private void spawnMig1(int yArg){
+		// spawns a line of  7 migs at the given y value
+		for(int i = 1; i < 8; i++){
+			spawnMig(100*i,yArg);
 		}
 	}
 }
@@ -394,9 +403,7 @@ abstract class timedEvent {
 
 	// check if the event should fire
 	public void execute(){
-		if (counter >= delay){
-			event();
-		}
+		if (counter >= delay) event();
 	}
 
 	// signals that the timedEvent should be deleted
@@ -404,6 +411,31 @@ abstract class timedEvent {
 		alive = false;
 	}
 
+	public boolean getState(){
+		// returns the timed event's state
+		return alive;
+	}
+}
+
+abstract class triggeredEvent {
+	// Triggered event
+
+	private boolean alive = true;
+	// event trigger condition
+	abstract boolean condition();
+
+	// behavior when condition is fulfilled
+	abstract void event();
+
+	public void execute(){
+		if (condition()) event();
+	}
+
+	// signals that the event should be deleted
+	public void kill(){
+		alive = false;
+	}
+	
 	public boolean getState(){
 		// returns the timed event's state
 		return alive;
