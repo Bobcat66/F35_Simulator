@@ -46,8 +46,9 @@ public class MyGdxGame extends ApplicationAdapter {
 	private boolean cannonFiring = false;
 	private boolean missileCooldown = false; // Whether missile is in cooldown
 
-	// Timed events
+	// events
 	private Array<timedEvent> timedEvents;
+	private Array<triggeredEvent> trigEvents;
 
 	// Fonts
 	private BitmapFont font;
@@ -89,6 +90,7 @@ public class MyGdxGame extends ApplicationAdapter {
 		bullets = new Array<Projectile>(); //Player bullets
 		missiles = new Array<Projectile>(); //Player missiles
 		timedEvents = new Array<timedEvent>(); //timed events
+		trigEvents = new Array<triggeredEvent>(); //triggered events
 		enemies = new Array<Actor>();
 
    		//F35.x = 800 / 2 - 100 / 2;
@@ -100,7 +102,7 @@ public class MyGdxGame extends ApplicationAdapter {
 		font = new BitmapFont(); // uses default font
 
 		// adds mig spawner event
-		timedEvents.add(new MiGSpawner());
+		trigEvents.add(new level1());
 	}
 
 	public void spawnBullet(Vector3 position){
@@ -322,6 +324,23 @@ public class MyGdxGame extends ApplicationAdapter {
 			event.execute();
 		}
 
+		//Handles timedEvents
+		for (Iterator<triggeredEvent> iter = trigEvents.iterator(); iter.hasNext(); ) {
+			triggeredEvent event = iter.next();
+		
+			// removes killed events
+			if(!event.getState()){
+				iter.remove();
+				continue;
+			}
+		
+			// Debugging code
+			//System.out.println(Gdx.graphics.getDeltaTime());
+			//System.out.println(event.counter);
+			//System.out.println(event.delay);
+			event.execute();
+		}
+
 		// Handles enemies
 		for (Iterator<Actor> iter = enemies.iterator(); iter.hasNext(); ){
 			Actor enemy = iter.next();
@@ -377,6 +396,31 @@ public class MyGdxGame extends ApplicationAdapter {
 
 		public MiGSpawner(){
 			delay = 10;
+		}
+	}
+
+	// Triggered events class
+
+	private class level1 extends triggeredEvent {
+
+		void event(){
+			spawnMig1(400);
+			trigEvents.add(new level2());
+			kill();
+		}
+		boolean condition(){
+			return enemies.isEmpty();
+		}
+	}
+
+	private class level2 extends triggeredEvent {
+
+		void event(){
+			spawnMig1(400);
+			spawnMig1(300);
+		}
+		boolean condition(){
+			return enemies.isEmpty();
 		}
 	}
 
