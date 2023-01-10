@@ -2,19 +2,15 @@ package com.mygdx.game;
 
 import java.util.Iterator;
 
-import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.Screen;
 
 public class GameScreen implements Screen {
@@ -60,9 +56,10 @@ public class GameScreen implements Screen {
 
 	public GameScreen(final F35Sim game) {
 
-		// SpriteBatch
+		// configures game
 		this.game = game;
-
+        this.game.gamescreen = this; // passes reference of itself to the F35Sim object
+        
 		// Load textures
 		F35Texture = new Texture("F35_Sprite.png");
 		bulletTexture = new Texture("bullet.png");

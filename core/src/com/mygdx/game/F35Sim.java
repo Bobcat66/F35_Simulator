@@ -8,6 +8,7 @@ public class F35Sim extends Game {
 
     public SpriteBatch batch;
     public BitmapFont font;
+    GameScreen gamescreen;
 
     public void create(){
         batch = new SpriteBatch();
@@ -21,6 +22,7 @@ public class F35Sim extends Game {
     }
 
     public void dispose(){
+        this.gamescreen.dispose();
         this.font.dispose();
         this.batch.dispose();
     }
