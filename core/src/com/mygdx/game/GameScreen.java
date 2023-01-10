@@ -520,7 +520,7 @@ public class GameScreen implements Screen {
 
 	private void spawnMig1(int yArg){
 		// spawns a line of  7 migs at the given y value
-		for(int i = 1; i < 8; i++){
+		for(int i = 0; i < 8; i++){
 			spawnMig(100*i,yArg);
 		}
 	}

@@ -22,6 +22,7 @@ public class F35Sim extends Game {
     }
 
     public void dispose(){
+        System.out.println("Assets disposed"); // debugging code
         this.gamescreen.dispose();
         this.font.dispose();
         this.batch.dispose();
