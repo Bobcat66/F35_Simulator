@@ -515,6 +515,20 @@ public class GameScreen implements Screen {
 		void event(){
 			spawnMig1(400);
 			spawnMig1(300);
+			trigEvents.add(new level3());
+			kill();
+		}
+		boolean condition(){
+			return enemies.isEmpty();
+		}
+	}
+
+	private class level3 extends triggeredEvent {
+
+		void event(){
+			spawnMig1(400);
+			spawnMig1(300);
+			spawnMig1(200);
 		}
 		boolean condition(){
 			return enemies.isEmpty();
