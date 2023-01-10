@@ -609,7 +609,7 @@ public class GameScreen implements Screen {
 	}
 	
 	private class FiringPattern3 extends timedEvent{
-		//Fires a barrage of 10 unguided missiles aimed at the player every 3 seconds
+		//Fires a barrage of 10 unguided missiles every 3 seconds
 		private String MiGName;
 
 		void event(){
@@ -618,11 +618,12 @@ public class GameScreen implements Screen {
 				kill();
 				return;
 			}
+			Vector2 position = new Vector2(MiG.x, MiG.y);
+			Vector2 velocity = locateObject(MiG,F35);
+			velocity.nor().scl(300);
 			for (int i = 0; i < 10; i++){
-				Vector2 position = new Vector2(MiG.x, MiG.y);
-				Vector2 velocity = locateObject(MiG,F35);
-				velocity.nor();
-				velocity.scl(300);
+				velocity.rotateDeg(1);
+				System.out.println(velocity.angleDeg());
 				spawnProjectile(10,30,position, velocity,"red",10000,AMRAAMTexture);
 			}
 			counter = 0;
@@ -635,7 +636,10 @@ public class GameScreen implements Screen {
 		}
 	}
 	
-	// Triggered events class
+	// Triggered events classes
+
+
+	// levels
 
 	private class level1 extends triggeredEvent {
 
@@ -666,12 +670,37 @@ public class GameScreen implements Screen {
 
 		void event(){
 			spawnMig2(400);
+			trigEvents.add(new level4());
+			kill();
 		}
 		boolean condition(){
 			return enemies.isEmpty();
 		}
 	}
 
+	private class level4 extends triggeredEvent {
+
+		void event(){
+			spawnMig2(400);
+			spawnMig2(300);
+			trigEvents.add(new level5());
+			kill();
+		}
+		boolean condition(){
+			return enemies.isEmpty();
+		}
+	}
+
+	private class level5 extends triggeredEvent {
+		void event(){
+			enemySpawn3(400);
+			spawnMig2(300);
+		}
+		boolean condition(){
+			return enemies.isEmpty();
+		}
+
+	}
 	// enemy spawning methods
 
 	private void spawnMig1(int yArg){
@@ -686,6 +715,13 @@ public class GameScreen implements Screen {
 		for(int i = 0; i < 8; i++){
 			spawnTargetMig(100*i + 1,yArg);
 		}
+	}
+
+	private void enemySpawn3(int yArg){
+		// spawns 3 king migs at the given y value
+		spawnKingMig(200, yArg);
+		spawnKingMig(300, yArg);
+		spawnKingMig(400, yArg);
 	}
 }
 
