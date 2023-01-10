@@ -41,7 +41,8 @@ public class MyGdxGame extends ApplicationAdapter {
 	private Array<Projectile> bullets;
 	private Array<Projectile> missiles;
 	private Array<Actor> enemies;
-	
+	private Array<Projectile> enemyMissiles;
+
 	// Control Variables;
 	private boolean cannonFiring = false;
 	private boolean missileCooldown = false; // Whether missile is in cooldown
@@ -56,6 +57,7 @@ public class MyGdxGame extends ApplicationAdapter {
 	// Other variables
 	private int score = 0;
 	private int misses;
+	private int MiGCount = 0;
 
 	@Override
 	public void create () {
@@ -84,7 +86,7 @@ public class MyGdxGame extends ApplicationAdapter {
 		camera.setToOrtho(false, 800, 480);
 
 		// Load objects
-		F35 = new Actor(60000,"blue");
+		F35 = new Actor(60000,"F35","blue");
 
 		// Create arrays
 		bullets = new Array<Projectile>(); //Player bullets
@@ -92,6 +94,7 @@ public class MyGdxGame extends ApplicationAdapter {
 		timedEvents = new Array<timedEvent>(); //timed events
 		trigEvents = new Array<triggeredEvent>(); //triggered events
 		enemies = new Array<Actor>();
+		enemyMissiles = new Array<Projectile>();
 
    		//F35.x = 800 / 2 - 100 / 2;
    		//F35.y = 20;
@@ -127,7 +130,9 @@ public class MyGdxGame extends ApplicationAdapter {
 
 	public void spawnMig(){
 		// spawns an enemy Mig-21
-		Actor MiG21 = new Actor(10000, "red");
+		MiGCount++;
+		String MiGName = "MiG-" + MiGCount;
+		Actor MiG21 = new Actor(10000,MiGName, "red");
 		MiG21.x = MathUtils.random(0,800-56);
 		MiG21.y = 400;
 		MiG21.width = 56;
@@ -136,12 +141,15 @@ public class MyGdxGame extends ApplicationAdapter {
 	}
 	public void spawnMig(int xArg, int yArg){
 		// spawns an enemy Mig-21 at the given coordinates
-		Actor MiG21 = new Actor(10000, "red");
+		MiGCount++;
+		String MiGName = "MiG-" + MiGCount;
+		Actor MiG21 = new Actor(10000,MiGName, "red");
 		MiG21.x = xArg;
 		MiG21.y = yArg;
 		MiG21.width = 56;
 		MiG21.height = 79;
 		enemies.add(MiG21);
+		timedEvents.add(new MiGMissile(MiGName));
 	}
 
 
@@ -163,6 +171,24 @@ public class MyGdxGame extends ApplicationAdapter {
 		missile.width=10;
 		missile.height=30;
 		projectileArray.add(missile);
+	}
+
+	public void spawnMissile(float xArg, float yArg, String team, Array<Projectile> projectileArray){
+		// spawns missile, works for all teams
+		Projectile missile = new Projectile(10000,team);
+		missile.x = xArg;
+		missile.y = yArg;
+		missile.width=10;
+		missile.height=30;
+		projectileArray.add(missile);
+	}
+
+	public Actor findEnemy(String nameString){
+		// finds enemy with the given name
+		for (Actor enemy : enemies){
+			if(enemy.name.equals(nameString)) return enemy;
+		}
+		return null;
 	}
 
 	@Override
@@ -208,6 +234,11 @@ public class MyGdxGame extends ApplicationAdapter {
 		for(Projectile missile : missiles) {
 			batch.draw(AMRAAMTexture, missile.x, missile.y);
 		}
+
+		// draws enemy missiles
+		for(Projectile missile : enemyMissiles) {
+			batch.draw(AMRAAMTexture, missile.x, missile.y); //TODO: Give proper textures to enemy missiles
+		}
 		
 		// draws enemies
 		for (Actor enemy : enemies) {
@@ -219,7 +250,7 @@ public class MyGdxGame extends ApplicationAdapter {
 		batch.draw(F35Texture, F35.x, F35.y);
 
 		// draws score
-		font.draw(batch, "Score: " + score, 0,480);
+		font.draw(batch, "Score: " + score + " Health: " + F35.health, 0,480);
 
 		batch.end();
 
@@ -274,6 +305,23 @@ public class MyGdxGame extends ApplicationAdapter {
 			}
 		}
 
+		// moves missiles, + collision detection
+		for (Iterator<Projectile> iter = enemyMissiles.iterator(); iter.hasNext(); ){
+			Projectile missile = iter.next();
+			missile.y -= 300 * Gdx.graphics.getDeltaTime(); //Missile speed: 300 px per second
+			if (missile.y <= 0){
+				iter.remove();
+				continue;
+			}
+		
+			if (missile.overlaps(F35)){
+				F35.hit(missile);
+				iter.remove();
+			}
+		}
+
+
+
 		
 		// Handles mouseclick
 		
@@ -324,7 +372,7 @@ public class MyGdxGame extends ApplicationAdapter {
 			event.execute();
 		}
 
-		//Handles timedEvents
+		//Handles triggeredEvents
 		for (Iterator<triggeredEvent> iter = trigEvents.iterator(); iter.hasNext(); ) {
 			triggeredEvent event = iter.next();
 		
@@ -396,6 +444,29 @@ public class MyGdxGame extends ApplicationAdapter {
 
 		public MiGSpawner(){
 			delay = 10;
+		}
+	}
+
+	private class MiGMissile extends timedEvent {
+		private String MiGName;
+
+		void event(){
+			Actor MiG = findEnemy(MiGName);
+			if (MiG == null) {
+				kill();
+				return;
+			}
+			int RNGesus = MathUtils.random(0,3);
+			if (RNGesus == 2){
+				spawnMissile(MiG.x,MiG.y,"red",enemyMissiles);
+			}
+			counter = 0;
+
+		}
+
+		public MiGMissile(String nameArg){
+			MiGName = nameArg;
+			delay = 1;
 		}
 	}
 

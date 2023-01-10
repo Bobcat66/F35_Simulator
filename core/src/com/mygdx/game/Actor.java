@@ -6,10 +6,12 @@ public class Actor extends Rectangle {
     // representation of projectiles
     public int health;
     public String team; // team, to prevent friendly fire
+    public String name; // to identify the actor
 
-    public Actor(int healthArg, String teamArg){
+    public Actor(int healthArg, String nameArg, String teamArg){
         super(); // calls constructor of Rectangle class
         health = healthArg;
+        name = nameArg;
         team = teamArg;
     }
 
