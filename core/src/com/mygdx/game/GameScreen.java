@@ -1,6 +1,7 @@
 package com.mygdx.game;
 
 import java.util.Iterator;
+import java.util.function.BooleanSupplier;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -8,10 +9,12 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.math.Vector2;
 
 public class GameScreen implements Screen {
 
@@ -35,10 +38,12 @@ public class GameScreen implements Screen {
 
 	// Entities
 	Actor F35;
+	Array<Actor> actors;
 	Array<Projectile> bullets;
 	Array<Projectile> missiles;
 	Array<Actor> enemies;
 	Array<Projectile> enemyMissiles;
+	Array<Projectile> projectiles;
 
 	// Control Variables;
 	boolean cannonFiring = false;
@@ -80,21 +85,23 @@ public class GameScreen implements Screen {
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, 800, 480);
 
-		// Load objects
-		F35 = new Actor(60000,"F35","blue");
+		// Create F35
+		F35 = new Actor();
+		F35.health = 60000;
+		F35.team = "blue";
+		F35.texture = F35Texture;
+		F35.width = 100;
+		F35.height = 100;
 
 		// Create arrays
 		bullets = new Array<Projectile>(); //Player bullets
 		missiles = new Array<Projectile>(); //Player missiles
+		projectiles = new Array<Projectile>();
 		timedEvents = new Array<timedEvent>(); //timed events
 		trigEvents = new Array<triggeredEvent>(); //triggered events
 		enemies = new Array<Actor>();
 		enemyMissiles = new Array<Projectile>();
-
-   		//F35.x = 800 / 2 - 100 / 2;
-   		//F35.y = 20;
-   		F35.width = 100;
-   		F35.height = 100;
+		actors = new Array<Actor>();
 
 		// adds mig spawner event
 		trigEvents.add(new level1());
@@ -107,24 +114,17 @@ public class GameScreen implements Screen {
 		bullet.y = position.y + 40;
 		bullet.width=2;
 		bullet.height=5;
-		bullets.add(bullet);
-	}
-
-	public void spawnBullet(Vector3 position, String team, Array<Projectile> projectileArray){
-		// spawns bullet, works for all teams
-		Projectile bullet = new Projectile(500,team);
-		bullet.x = position.x;
-		bullet.y = position.y;
-		bullet.width=2;
-		bullet.height=5;
-		projectileArray.add(bullet);
+		bullet.texture = bulletTexture;
+		bullet.velocity = new Vector2(0,500);
+		projectiles.add(bullet);
 	}
 
 	public void spawnMig(){
 		// spawns an enemy Mig-21
 		MiGCount++;
 		String MiGName = "MiG-" + MiGCount;
-		Actor MiG21 = new Actor(10000,MiGName, "red");
+		Actor MiG21 = new Actor(10000, MiGName, "red");
+		MiG21.texture = MIG21Texture;
 		MiG21.x = MathUtils.random(0,800-56);
 		MiG21.y = 400;
 		MiG21.width = 56;
@@ -136,12 +136,27 @@ public class GameScreen implements Screen {
 		MiGCount++;
 		String MiGName = "MiG-" + MiGCount;
 		Actor MiG21 = new Actor(10000,MiGName, "red");
+		MiG21.texture = MIG21Texture;
 		MiG21.x = xArg;
 		MiG21.y = yArg;
 		MiG21.width = 56;
 		MiG21.height = 79;
 		enemies.add(MiG21);
 		timedEvents.add(new MiGMissile(MiGName));
+	}
+
+	public void spawnTargetMig(int xArg, int yArg){
+		// spawns an enemy Mig-21 with targeting missiles at the given coordinates
+		MiGCount++;
+		String MiGName = "MiG-" + MiGCount;
+		Actor MiG21 = new Actor(10000,MiGName, "red");
+		MiG21.texture = MIG21Texture;
+		MiG21.x = xArg;
+		MiG21.y = yArg;
+		MiG21.width = 56;
+		MiG21.height = 79;
+		enemies.add(MiG21);
+		timedEvents.add(new MiGTargetMissile(MiGName));
 	}
 
 
@@ -152,27 +167,34 @@ public class GameScreen implements Screen {
 		missile.y = position.y;
 		missile.width=10;
 		missile.height=30;
-		missiles.add(missile);
+		missile.texture = AMRAAMTexture;
+		missile.velocity = new Vector2(0,300);
+		projectiles.add(missile);
 	}
 
-	public void spawnMissile(Vector3 position, String team, Array<Projectile> projectileArray){
-		// spawns missile, works for all teams
-		Projectile missile = new Projectile(10000,team);
-		missile.x = position.x;
-		missile.y = position.y;
-		missile.width=10;
-		missile.height=30;
-		projectileArray.add(missile);
+	public void spawnProjectile(int width, int height, Vector2 position, Vector2 velocity, String team, int damage, Texture texture){
+		Projectile projectile = new Projectile();
+		projectile.damage = damage;
+		projectile.team = team;
+		projectile.velocity = velocity;
+		projectile.x = position.x;
+		projectile.y = position.y;
+		projectile.width = width;
+		projectile.height = height;
+		projectile.texture = texture;
+		projectiles.add(projectile);
 	}
 
-	public void spawnMissile(float xArg, float yArg, String team, Array<Projectile> projectileArray){
+	public void spawnMissile(float xArg, float yArg, String team, Vector2 velocity){
 		// spawns missile, works for all teams
 		Projectile missile = new Projectile(10000,team);
 		missile.x = xArg;
 		missile.y = yArg;
 		missile.width=10;
 		missile.height=30;
-		projectileArray.add(missile);
+		missile.team = team;
+		missile.velocity = velocity;
+		projectiles.add(missile);
 	}
 
 	public Actor findEnemy(String nameString){
@@ -181,6 +203,14 @@ public class GameScreen implements Screen {
 			if(enemy.name.equals(nameString)) return enemy;
 		}
 		return null;
+	}
+
+
+	public Vector2 locateObject(Rectangle origin, Rectangle target){
+		// finds the position of target rectangle relative to origin rectangle, in the form of a vector
+		float x = target.x - origin.x;
+		float y = target.y - origin.y;
+		return new Vector2(x,y);
 	}
 
 	@Override
@@ -231,10 +261,15 @@ public class GameScreen implements Screen {
 		for(Projectile missile : enemyMissiles) {
 			game.batch.draw(AMRAAMTexture, missile.x, missile.y); //TODO: Give proper textures to enemy missiles
 		}
+
+		// draws projectiles
+		for (Projectile projectile : projectiles){
+			game.batch.draw(projectile.texture, projectile.x, projectile.y);
+		}
 		
 		// draws enemies
 		for (Actor enemy : enemies) {
-			game.batch.draw(MIG21Texture, enemy.x, enemy.y);
+			game.batch.draw(enemy.texture, enemy.x, enemy.y);
 		}
 
 		// updates sprite position
@@ -247,6 +282,7 @@ public class GameScreen implements Screen {
 		game.batch.end();
 
 		// moves bullets, and removes them if they are no longer on the screen, and checks if they collide with anything
+		/* 
 		
 		for (Iterator<Projectile> iter = bullets.iterator(); iter.hasNext(); ){
 			Projectile bullet = iter.next();
@@ -268,7 +304,6 @@ public class GameScreen implements Screen {
 				iter.remove();
 				//System.out.println("Collision successful"); // Debugging code
 			}
-			*/
 
 			for(Actor enemy : enemies){
 				if (bullet.overlaps(enemy)) {
@@ -278,8 +313,10 @@ public class GameScreen implements Screen {
 				}
 			}
 		}
+		*/
 
 		// moves missiles, + collision detection
+		/*
 		for (Iterator<Projectile> iter = missiles.iterator(); iter.hasNext(); ){
 			Projectile missile = iter.next();
 			missile.y += 300 * Gdx.graphics.getDeltaTime(); //Missile speed: 300 px per second
@@ -311,7 +348,37 @@ public class GameScreen implements Screen {
 				iter.remove();
 			}
 		}
+		*/
 
+		// Moves projectiles + collision detection
+		for (Iterator<Projectile> iter = projectiles.iterator(); iter.hasNext(); ){
+			Projectile projectile = iter.next();
+			projectile.move(Gdx.graphics.getDeltaTime());
+			// makes sure projectile stays within the game
+			if (projectile.y <= 0 || projectile.y >= 480 || projectile.x <= 0 || projectile.x >= 800){
+				iter.remove();
+				continue;
+			}
+
+			for (Actor enemy : enemies){
+				if (projectile.overlaps(enemy)){
+					enemy.hit(projectile);
+					//removes missile if its from blue team after hitting enemy
+					if (projectile.team.equals("blue")){
+						iter.remove();
+						continue;
+					}
+				}
+			}
+
+			if (projectile.overlaps(F35)){
+				F35.hit(projectile);
+				if (projectile.team.equals("red")){
+					iter.remove();
+					continue;
+				}
+			}
+		}
 
 
 		
@@ -484,13 +551,41 @@ public class GameScreen implements Screen {
 			}
 			int RNGesus = MathUtils.random(0,3);
 			if (RNGesus == 2){
-				spawnMissile(MiG.x,MiG.y,"red",enemyMissiles);
+				spawnProjectile(10,30,new Vector2(MiG.x,MiG.y), new Vector2(0,-300),"red",10000,AMRAAMTexture);
 			}
 			counter = 0;
 
 		}
 
 		public MiGMissile(String nameArg){
+			MiGName = nameArg;
+			delay = 1;
+		}
+	}
+
+	private class MiGTargetMissile extends timedEvent{
+		private String MiGName;
+
+		void event(){
+			Actor MiG = findEnemy(MiGName);
+			if (MiG == null) {
+				kill();
+				return;
+			}
+			int RNGesus = MathUtils.random(0,3);
+			if (RNGesus == 2){
+				Vector2 position = new Vector2(MiG.x, MiG.y);
+				Vector2 velocity = locateObject(MiG,F35);
+				velocity.nor();
+				velocity.scl(300);
+
+				spawnProjectile(10,30,position, velocity,"red",10000,AMRAAMTexture);
+			}
+			counter = 0;
+
+		}
+
+		public MiGTargetMissile(String nameArg){
 			MiGName = nameArg;
 			delay = 1;
 		}
@@ -540,7 +635,7 @@ public class GameScreen implements Screen {
 	private void spawnMig1(int yArg){
 		// spawns a line of  7 migs at the given y value
 		for(int i = 0; i < 8; i++){
-			spawnMig(100*i,yArg);
+			spawnMig(100*i + 1,yArg);
 		}
 	}
 }
