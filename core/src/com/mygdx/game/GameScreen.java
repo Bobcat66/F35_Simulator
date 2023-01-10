@@ -107,6 +107,7 @@ public class GameScreen implements Screen {
 		trigEvents.add(new level1());
 	}
 
+	// Spawner functions
 	public void spawnBullet(Vector3 position){
 		// spawns bullet
 		Projectile bullet = new Projectile(500,"blue");
@@ -142,7 +143,7 @@ public class GameScreen implements Screen {
 		MiG21.width = 56;
 		MiG21.height = 79;
 		enemies.add(MiG21);
-		timedEvents.add(new MiGMissile(MiGName));
+		timedEvents.add(new FiringPattern1(MiGName));
 	}
 
 	public void spawnTargetMig(int xArg, int yArg){
@@ -156,7 +157,21 @@ public class GameScreen implements Screen {
 		MiG21.width = 56;
 		MiG21.height = 79;
 		enemies.add(MiG21);
-		timedEvents.add(new MiGTargetMissile(MiGName));
+		timedEvents.add(new FiringPattern2(MiGName));
+	}
+
+	public void spawnKingMig(int xArg, int yArg){
+		// spawns an enemy MiG that launches missile barrages at the given coordinates
+		MiGCount++;
+		String MiGName = "MiG-" + MiGCount;
+		Actor MiG21 = new Actor(10000,MiGName, "red");
+		MiG21.texture = MIG21Texture;
+		MiG21.x = xArg;
+		MiG21.y = yArg;
+		MiG21.width = 56;
+		MiG21.height = 79;
+		enemies.add(MiG21);
+		timedEvents.add(new FiringPattern3(MiGName));
 	}
 
 
@@ -540,7 +555,8 @@ public class GameScreen implements Screen {
 		}
 	}
 
-	private class MiGMissile extends timedEvent {
+	private class FiringPattern1 extends timedEvent {
+		// 1/4 chance of firing an unguided missile every second
 		private String MiGName;
 
 		void event(){
@@ -557,13 +573,14 @@ public class GameScreen implements Screen {
 
 		}
 
-		public MiGMissile(String nameArg){
+		public FiringPattern1(String nameArg){
 			MiGName = nameArg;
 			delay = 1;
 		}
 	}
 
-	private class MiGTargetMissile extends timedEvent{
+	private class FiringPattern2 extends timedEvent{
+		// 1/4 chance of firing an unguided rocket aimed at the player every second
 		private String MiGName;
 
 		void event(){
@@ -585,12 +602,39 @@ public class GameScreen implements Screen {
 
 		}
 
-		public MiGTargetMissile(String nameArg){
+		public FiringPattern2(String nameArg){
 			MiGName = nameArg;
 			delay = 1;
 		}
 	}
+	
+	private class FiringPattern3 extends timedEvent{
+		//Fires a barrage of 10 unguided missiles aimed at the player every 3 seconds
+		private String MiGName;
 
+		void event(){
+			Actor MiG = findEnemy(MiGName);
+			if (MiG == null) {
+				kill();
+				return;
+			}
+			for (int i = 0; i < 10; i++){
+				Vector2 position = new Vector2(MiG.x, MiG.y);
+				Vector2 velocity = locateObject(MiG,F35);
+				velocity.nor();
+				velocity.scl(300);
+				spawnProjectile(10,30,position, velocity,"red",10000,AMRAAMTexture);
+			}
+			counter = 0;
+
+		}
+
+		public FiringPattern3(String nameArg){
+			MiGName = nameArg;
+			delay = 1;
+		}
+	}
+	
 	// Triggered events class
 
 	private class level1 extends triggeredEvent {
@@ -621,9 +665,7 @@ public class GameScreen implements Screen {
 	private class level3 extends triggeredEvent {
 
 		void event(){
-			spawnMig1(400);
-			spawnMig1(300);
-			spawnMig1(200);
+			spawnMig2(400);
 		}
 		boolean condition(){
 			return enemies.isEmpty();
@@ -633,9 +675,16 @@ public class GameScreen implements Screen {
 	// enemy spawning methods
 
 	private void spawnMig1(int yArg){
-		// spawns a line of  7 migs at the given y value
+		// spawns a line of 8 migs at the given y value
 		for(int i = 0; i < 8; i++){
 			spawnMig(100*i + 1,yArg);
+		}
+	}
+
+	private void spawnMig2(int yArg){
+		// spawns a line of 8 targeting migs at the given y value
+		for(int i = 0; i < 8; i++){
+			spawnTargetMig(100*i + 1,yArg);
 		}
 	}
 }
