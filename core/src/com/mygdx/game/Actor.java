@@ -1,12 +1,16 @@
 package com.mygdx.game;
 
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.graphics.Texture;
 
 public class Actor extends Rectangle {
-    // representation of projectiles
+    // representation of actors
     public int health;
     public String team; // team, to prevent friendly fire
     public String name; // to identify the actor
+    public Vector2 velocity;
+    public Texture texture;
 
     public Actor(int healthArg, String nameArg, String teamArg){
         super(); // calls constructor of Rectangle class
@@ -17,6 +21,12 @@ public class Actor extends Rectangle {
 
     public Actor(){
         super();
+    }
+
+    public void move(float deltaTime){
+        // handles movement, delta is the time since the last movement
+        this.x += velocity.x * deltaTime;
+        this.y += velocity.y * deltaTime;
     }
 
     public void hit(Projectile projectile){
