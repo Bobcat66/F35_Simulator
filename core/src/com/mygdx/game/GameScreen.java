@@ -395,6 +395,11 @@ public class GameScreen implements Screen {
 			}
 		}
 
+		//Handles endgame conditions
+		if (F35.health <= 0){
+			game.setScreen(new EndScreen(game, score));
+		}
+
 	}
 	
 	@Override

@@ -34,10 +34,10 @@ public class EndScreen implements Screen {
         game.batch.begin();
         game.font.draw(game.batch, "GAME OVER", 100, 150);
         game.font.draw(game.batch, "Final Score: " + score, 100, 100);
-		game.font.draw(game.batch, "Tap anywhere to restart", 100, 50);
+		game.font.draw(game.batch, "Press ENTER to restart", 100, 50);
 		game.batch.end();
 
-		if (Gdx.input.isTouched()) {
+		if (Gdx.input.isKeyPressed(66)) {
 			game.setScreen(new GameScreen(game));
 			dispose();
 		}
@@ -78,5 +78,5 @@ public class EndScreen implements Screen {
         // TODO Auto-generated method stub
         
     }
-    
+
 }
