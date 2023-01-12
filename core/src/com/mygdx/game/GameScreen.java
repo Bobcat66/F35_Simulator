@@ -52,6 +52,7 @@ public class GameScreen implements Screen {
 	// events
 	Array<timedEvent> timedEvents;
 	Array<triggeredEvent> trigEvents;
+	Array<constantEvent> constEvents;
 
 
 	// Other variables
@@ -623,8 +624,8 @@ public class GameScreen implements Screen {
 			velocity.nor().scl(300);
 			for (int i = 0; i < 10; i++){
 				velocity.rotateDeg(1);
-				System.out.println(velocity.angleDeg());
-				spawnProjectile(10,30,position, velocity,"red",10000,AMRAAMTexture);
+				// System.out.println(velocity.angleDeg()); //Debugging code
+				spawnProjectile(10,30,position, new Vector2(velocity.x,velocity.y),"red",10000,AMRAAMTexture);
 			}
 			counter = 0;
 
@@ -723,6 +724,7 @@ public class GameScreen implements Screen {
 		spawnKingMig(300, yArg);
 		spawnKingMig(400, yArg);
 	}
+
 }
 
 
@@ -773,6 +775,21 @@ abstract class triggeredEvent {
 	
 	public boolean getState(){
 		// returns the timed event's state
+		return alive;
+	}
+}
+
+abstract class constantEvent {
+	// Event that executes every single time render() is called
+	private boolean alive = true;
+
+	abstract void event();
+
+	public void kill(){
+		alive = false;
+	}
+	
+	public boolean getState(){
 		return alive;
 	}
 }
