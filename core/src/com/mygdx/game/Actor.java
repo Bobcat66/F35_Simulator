@@ -9,7 +9,7 @@ public class Actor extends Rectangle {
     public int health;
     public String team; // team, to prevent friendly fire
     public String name; // to identify the actor
-    public Vector2 velocity;
+    public Vector2 velocity = new Vector2(0,0);
     public Texture texture;
 
     public Actor(int healthArg, String nameArg, String teamArg){

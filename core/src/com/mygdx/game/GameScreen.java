@@ -30,6 +30,7 @@ public class GameScreen implements Screen {
 	Texture bulletTexture;
 	Texture AMRAAMTexture;
 	Texture MIG21Texture;
+	Texture SpreyTexture;
 
 	// Audio
 	Sound cannonSound;
@@ -72,6 +73,7 @@ public class GameScreen implements Screen {
 		AMRAAMTexture = new Texture("AMRAAM.png");
 		MIG21Texture = new Texture("mig-21.png");
 		img = new Texture("F-35A.jpg");
+		SpreyTexture = new Texture("pierreSpret.jpg");
 
 		// Load Audio
 		cannonSound = Gdx.audio.newSound(Gdx.files.internal("Weapons/GAU8CannonLow.wav"));
@@ -100,6 +102,7 @@ public class GameScreen implements Screen {
 		projectiles = new Array<Projectile>();
 		timedEvents = new Array<timedEvent>(); //timed events
 		trigEvents = new Array<triggeredEvent>(); //triggered events
+		constEvents = new Array<constantEvent>();
 		enemies = new Array<Actor>();
 		enemyMissiles = new Array<Projectile>();
 		actors = new Array<Actor>();
@@ -175,17 +178,19 @@ public class GameScreen implements Screen {
 		timedEvents.add(new FiringPattern3(MiGName));
 	}
 
-	public void spawnChaseMig(int xArg, int yArg){
+	public void spawnSprey(int xArg, int yArg){
+		//TODO: add pierre sprey asset
 		MiGCount++;
 		String MiGName = "MiG-" + MiGCount;
-		Actor MiG21 = new Actor(10000,MiGName, "red");
-		MiG21.texture = MIG21Texture;
+		Actor MiG21 = new Actor(100000,MiGName, "red");
+		MiG21.texture = SpreyTexture;
 		MiG21.x = xArg;
 		MiG21.y = yArg;
-		MiG21.width = 56;
-		MiG21.height = 79;
+		MiG21.width = 177;
+		MiG21.height = 182;
 		enemies.add(MiG21);
 		timedEvents.add(new FiringPattern3(MiGName));
+		constEvents.add(new chaseX(MiGName, 150));
 	}
 
 
@@ -477,6 +482,22 @@ public class GameScreen implements Screen {
 			event.execute();
 		}
 
+		//Handles constantEvents
+		for (Iterator<constantEvent> iter = constEvents.iterator(); iter.hasNext(); ) {
+			constantEvent event = iter.next();
+		
+			// removes killed events
+			if(!event.getState()){
+				iter.remove();
+				continue;
+			}
+		
+			// Debugging code
+			//System.out.println(Gdx.graphics.getDeltaTime());
+			//System.out.println(event.counter);
+			//System.out.println(event.delay);
+			event.event();
+		}
 		// Handles enemies
 		for (Iterator<Actor> iter = enemies.iterator(); iter.hasNext(); ){
 			Actor enemy = iter.next();
@@ -489,6 +510,11 @@ public class GameScreen implements Screen {
 				iter.remove();
 				score++;
 			}
+		}
+
+		//Handles actor movement
+		for (Actor enemy : enemies) {
+			enemy.move(Gdx.graphics.getDeltaTime());
 		}
 
 		//Handles endgame conditions
@@ -509,6 +535,7 @@ public class GameScreen implements Screen {
 		cannonEndSound.dispose();
 		backgroundMusic.dispose();
 		MIG21Texture.dispose();
+		SpreyTexture.dispose();
 	}
 
     @Override
@@ -709,6 +736,8 @@ public class GameScreen implements Screen {
 		void event(){
 			enemySpawn3(400);
 			spawnMig2(300);
+			trigEvents.add(new level6());
+			kill();
 		}
 		boolean condition(){
 			return enemies.isEmpty();
@@ -716,15 +745,42 @@ public class GameScreen implements Screen {
 
 	}
 
+	private class level6 extends triggeredEvent {
+		void event(){
+			spawnSprey(400, 300);
+		}
+		boolean condition(){
+			return enemies.isEmpty();
+		}
+
+	}
+
+
 	// Constant Event Classes
 
 	private class chaseX extends constantEvent {
 		// makes enemy chase the player
-		private String enemyName;
+		private String enemyName; // name of enemy chasing the player
+		private int speed; //speed in pixels per second
 		
 		void event(){
 			Actor enemy = findEnemy(enemyName);
-			
+			Vector2 newVelocity = null;
+			try{
+				newVelocity = locateObject(enemy, F35);
+			} catch (NullPointerException e){
+				kill();
+				return;
+			}
+			newVelocity.nor();
+			newVelocity.y = 0;
+			newVelocity.scl(speed);
+			enemy.velocity = newVelocity;
+		}
+
+		public chaseX(String enemyName, int speed){
+			this.enemyName = enemyName;
+			this.speed = speed;
 		}
 	}
 	// enemy spawning methods
