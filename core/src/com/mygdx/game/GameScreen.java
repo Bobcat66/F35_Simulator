@@ -175,6 +175,19 @@ public class GameScreen implements Screen {
 		timedEvents.add(new FiringPattern3(MiGName));
 	}
 
+	public void spawnChaseMig(int xArg, int yArg){
+		MiGCount++;
+		String MiGName = "MiG-" + MiGCount;
+		Actor MiG21 = new Actor(10000,MiGName, "red");
+		MiG21.texture = MIG21Texture;
+		MiG21.x = xArg;
+		MiG21.y = yArg;
+		MiG21.width = 56;
+		MiG21.height = 79;
+		enemies.add(MiG21);
+		timedEvents.add(new FiringPattern3(MiGName));
+	}
+
 
 	public void spawnMissile(Vector3 position){
 		// spawns missile
@@ -701,6 +714,18 @@ public class GameScreen implements Screen {
 			return enemies.isEmpty();
 		}
 
+	}
+
+	// Constant Event Classes
+
+	private class chaseX extends constantEvent {
+		// makes enemy chase the player
+		private String enemyName;
+		
+		void event(){
+			Actor enemy = findEnemy(enemyName);
+			
+		}
 	}
 	// enemy spawning methods
 
