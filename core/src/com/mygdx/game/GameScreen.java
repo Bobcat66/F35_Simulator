@@ -190,7 +190,8 @@ public class GameScreen implements Screen {
 		MiG21.height = 182;
 		MiG21.healthDisplay = true;
 		enemies.add(MiG21);
-		timedEvents.add(new FiringPattern3(MiGName));
+		timedEvents.add(new FiringPattern4(MiGName,0,0,2));
+		timedEvents.add(new FiringPattern4(MiGName,177,0,2));
 		constEvents.add(new chaseX(MiGName, 150));
 	}
 
@@ -243,6 +244,13 @@ public class GameScreen implements Screen {
 
 	public Vector2 locateObject(Rectangle origin, Rectangle target){
 		// finds the position of target rectangle relative to origin rectangle, in the form of a vector
+		float x = target.x - origin.x;
+		float y = target.y - origin.y;
+		return new Vector2(x,y);
+	}
+
+	public Vector2 locateObject(Vector2 origin, Rectangle target){
+		// finds the position of target rectangle relative to origin point, in the form of a vector
 		float x = target.x - origin.x;
 		float y = target.y - origin.y;
 		return new Vector2(x,y);
@@ -588,6 +596,69 @@ public class GameScreen implements Screen {
 		}
 	}
 
+	private class missileBarrage extends timedEvent {
+		// fires barrageCount missile barrages, each containing missileCount missiles
+		int barrageCounter = 0;
+		int barrageCount;
+		int missileCount;
+		String name;
+		// Where the missiles should launch, relative to the launcher's origin
+		int offsetX;
+		int offsetY;
+		int degOffset = 1; // how much each missile is rotated compared to the last one, in degrees
+
+
+		void event(){
+			if (barrageCounter >= barrageCount) {
+				kill();
+				return;
+			}
+			Actor launcher = findEnemy(name);
+			if (launcher == null) {
+				kill();
+				return;
+			}
+			Vector2 position = new Vector2(launcher.x + offsetX, launcher.y + offsetY);
+			Vector2 velocity = locateObject(position,F35);
+			velocity.nor().scl(300);
+			for (int i = 0; i < missileCount; i++){
+				velocity.rotateDeg(degOffset);
+				// System.out.println(velocity.angleDeg()); //Debugging code
+				spawnProjectile(10,30,position, new Vector2(velocity.x,velocity.y),"red",10000,AMRAAMTexture);
+			}
+			barrageCounter++;
+			counter = 0;
+
+		}
+
+		public missileBarrage(int missileCount, int barrageCount, float delay, String name, int offsetX, int offsetY){
+			this.missileCount = missileCount;
+			this.barrageCount = barrageCount;
+			this.delay = delay;
+			this.name = name;
+			this.offsetX = offsetX;
+			this.offsetY = offsetY;
+		}
+
+		public missileBarrage(int missileCount, int barrageCount, float delay, String name, int degOffset){
+			this.missileCount = missileCount;
+			this.barrageCount = barrageCount;
+			this.delay = delay;
+			this.name = name;
+			this.degOffset = degOffset;
+		}
+
+		public missileBarrage(int missileCount, int barrageCount, float delay, String name, int offsetX, int offsetY, int degOffset){
+			this.missileCount = missileCount;
+			this.barrageCount = barrageCount;
+			this.delay = delay;
+			this.name = name;
+			this.offsetX = offsetX;
+			this.offsetY = offsetY;
+			this.degOffset = degOffset;
+		}
+	}
+
 	private class MiGSpawner extends timedEvent {
 		
 		void event(){
@@ -678,6 +749,44 @@ public class GameScreen implements Screen {
 		public FiringPattern3(String nameArg){
 			MiGName = nameArg;
 			delay = 1;
+		}
+	}
+
+	private class FiringPattern4 extends timedEvent {
+		private String name;
+		// how far from the launcher's origin point should the missiles fire from
+		private int offsetX = 0;
+		private int offsetY = 0;
+		private int degOffset = 1;
+		
+		void event(){
+			Actor launcher = findEnemy(name);
+			if (launcher == null) {
+				kill();
+				return;
+			}
+			timedEvents.add(new missileBarrage(20,5,(float) 0.1,launcher.name,offsetX,offsetY, degOffset));
+			counter = 0;
+		}
+
+		public FiringPattern4(String nameArg){
+			name = nameArg;
+			delay = 3;
+		}
+
+		public FiringPattern4(String nameArg, int offsetX, int offsetY){
+			name = nameArg;
+			this.offsetX = offsetX;
+			this.offsetY = offsetY;
+			delay = 3;
+		}
+		
+		public FiringPattern4(String nameArg, int offsetX, int offsetY, int degOffset){
+			name = nameArg;
+			this.offsetX = offsetX;
+			this.offsetY = offsetY;
+			this.degOffset = degOffset;
+			delay = 3;
 		}
 	}
 	
