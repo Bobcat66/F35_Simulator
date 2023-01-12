@@ -11,6 +11,7 @@ public class Actor extends Rectangle {
     public String name; // to identify the actor
     public Vector2 velocity = new Vector2(0,0);
     public Texture texture;
+    public Boolean healthDisplay = false; // whether health should be displayed
 
     public Actor(int healthArg, String nameArg, String teamArg){
         super(); // calls constructor of Rectangle class

@@ -188,6 +188,7 @@ public class GameScreen implements Screen {
 		MiG21.y = yArg;
 		MiG21.width = 177;
 		MiG21.height = 182;
+		MiG21.healthDisplay = true;
 		enemies.add(MiG21);
 		timedEvents.add(new FiringPattern3(MiGName));
 		constEvents.add(new chaseX(MiGName, 150));
@@ -304,6 +305,9 @@ public class GameScreen implements Screen {
 		// draws enemies
 		for (Actor enemy : enemies) {
 			game.batch.draw(enemy.texture, enemy.x, enemy.y);
+			if (enemy.healthDisplay){
+				game.font.draw(game.batch, "HP: " + enemy.health, enemy.x + enemy.width/2, enemy.y+enemy.height);
+			}
 		}
 
 		// updates sprite position
