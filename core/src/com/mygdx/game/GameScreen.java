@@ -31,6 +31,7 @@ public class GameScreen implements Screen {
 	Texture AMRAAMTexture;
 	Texture MIG21Texture;
 	Texture SpreyTexture;
+	Texture AngrySpreyTexture;
 
 	// Audio
 	Sound cannonSound;
@@ -74,6 +75,7 @@ public class GameScreen implements Screen {
 		MIG21Texture = new Texture("mig-21.png");
 		img = new Texture("F-35A.jpg");
 		SpreyTexture = new Texture("pierreSpret.jpg");
+		AngrySpreyTexture = new Texture("pierreSpretAngry.jpg");
 
 		// Load Audio
 		cannonSound = Gdx.audio.newSound(Gdx.files.internal("Weapons/GAU8CannonLow.wav"));
@@ -182,7 +184,7 @@ public class GameScreen implements Screen {
 		//TODO: add pierre sprey asset
 		MiGCount++;
 		String MiGName = "MiG-" + MiGCount;
-		Actor MiG21 = new Actor(100000,MiGName, "red");
+		Actor MiG21 = new Actor(1000000,MiGName, "red");
 		MiG21.texture = SpreyTexture;
 		MiG21.x = xArg;
 		MiG21.y = yArg;
@@ -192,6 +194,7 @@ public class GameScreen implements Screen {
 		enemies.add(MiG21);
 		timedEvents.add(new FiringPattern4(MiGName,0,0,2));
 		timedEvents.add(new FiringPattern4(MiGName,177,0,2));
+		trigEvents.add(new SpreyAngry(MiGName));
 		constEvents.add(new chaseX(MiGName, 150));
 	}
 
@@ -866,6 +869,28 @@ public class GameScreen implements Screen {
 			return enemies.isEmpty();
 		}
 
+	}
+
+
+	//Triggered events
+
+	private class SpreyAngry extends triggeredEvent{
+		private String name;
+
+		void event(){
+			Actor sprey = findEnemy(name);
+			sprey.texture = AngrySpreyTexture;
+			kill();
+		}
+
+		boolean condition(){
+			Actor sprey = findEnemy(name);
+			return sprey.health <= 750000;
+		}
+
+		public SpreyAngry(String name){
+			this.name = name;
+		}
 	}
 
 
