@@ -864,11 +864,22 @@ public class GameScreen implements Screen {
 	private class level6 extends triggeredEvent {
 		void event(){
 			spawnSprey(400, 300);
+			trigEvents.add(new winGame());
+			kill();
 		}
 		boolean condition(){
 			return enemies.isEmpty();
 		}
 
+	}
+
+	private class winGame extends triggeredEvent {
+		void event(){
+			game.setScreen(new WinScreen(game, score));
+		}
+		boolean condition(){
+			return enemies.isEmpty();
+		}
 	}
 
 
@@ -880,6 +891,7 @@ public class GameScreen implements Screen {
 		void event(){
 			Actor sprey = findEnemy(name);
 			sprey.texture = AngrySpreyTexture;
+			timedEvents.add(new FiringPattern3(sprey.name));
 			kill();
 		}
 
