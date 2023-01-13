@@ -751,7 +751,7 @@ public class GameScreen implements Screen {
 
 		public FiringPattern3(String nameArg){
 			MiGName = nameArg;
-			delay = 1;
+			delay = 3;
 		}
 	}
 
@@ -789,7 +789,7 @@ public class GameScreen implements Screen {
 			this.offsetX = offsetX;
 			this.offsetY = offsetY;
 			this.degOffset = degOffset;
-			delay = 3;
+			delay = 5;
 		}
 	}
 	
