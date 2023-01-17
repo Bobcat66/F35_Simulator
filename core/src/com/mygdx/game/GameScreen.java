@@ -32,6 +32,7 @@ public class GameScreen implements Screen {
 	Texture MIG21Texture;
 	Texture SpreyTexture;
 	Texture AngrySpreyTexture;
+	Texture BAMRAAMTexture;
 
 	// Audio
 	Sound cannonSound;
@@ -72,6 +73,7 @@ public class GameScreen implements Screen {
 		F35Texture = new Texture("F35_Sprite.png");
 		bulletTexture = new Texture("bullet.png");
 		AMRAAMTexture = new Texture("AMRAAM.png");
+		BAMRAAMTexture = new Texture("BAMRAAM.png");
 		MIG21Texture = new Texture("mig-21.png");
 		img = new Texture("F-35A.jpg");
 		SpreyTexture = new Texture("pierreSpret.jpg");
@@ -95,8 +97,8 @@ public class GameScreen implements Screen {
 		F35.health = 60000;
 		F35.team = "blue";
 		F35.texture = F35Texture;
-		F35.width = 100;
-		F35.height = 100;
+		F35.width = 76;
+		F35.height = 82;
 
 		// Create arrays
 		bullets = new Array<Projectile>(); //Player bullets
@@ -322,7 +324,7 @@ public class GameScreen implements Screen {
 		}
 
 		// updates sprite position
-		F35.setPosition(mousePos.x-50, mousePos.y - 50);
+		F35.setPosition(mousePos.x-38, mousePos.y - 41);
 		game.batch.draw(F35Texture, F35.x, F35.y);
 
 		// draws score
@@ -546,6 +548,7 @@ public class GameScreen implements Screen {
 		F35Texture.dispose();
 		bulletTexture.dispose();
 		AMRAAMTexture.dispose();
+		BAMRAAMTexture.dispose();
 		cannonSound.dispose();
 		cannonEndSound.dispose();
 		backgroundMusic.dispose();
@@ -624,10 +627,11 @@ public class GameScreen implements Screen {
 			Vector2 position = new Vector2(launcher.x + offsetX, launcher.y + offsetY);
 			Vector2 velocity = locateObject(position,F35);
 			velocity.nor().scl(300);
+			velocity.rotateDeg(-(degOffset * missileCount)/2);
 			for (int i = 0; i < missileCount; i++){
 				velocity.rotateDeg(degOffset);
 				// System.out.println(velocity.angleDeg()); //Debugging code
-				spawnProjectile(10,30,position, new Vector2(velocity.x,velocity.y),"red",10000,AMRAAMTexture);
+				spawnProjectile(10,30,position, new Vector2(velocity.x,velocity.y),"red",10000,BAMRAAMTexture);
 			}
 			barrageCounter++;
 			counter = 0;
@@ -686,7 +690,7 @@ public class GameScreen implements Screen {
 			}
 			int RNGesus = MathUtils.random(0,3);
 			if (RNGesus == 2){
-				spawnProjectile(10,30,new Vector2(MiG.x,MiG.y), new Vector2(0,-300),"red",10000,AMRAAMTexture);
+				spawnProjectile(10,30,new Vector2(MiG.x,MiG.y), new Vector2(0,-300),"red",10000,BAMRAAMTexture);
 			}
 			counter = 0;
 
@@ -715,7 +719,7 @@ public class GameScreen implements Screen {
 				velocity.nor();
 				velocity.scl(300);
 
-				spawnProjectile(10,30,position, velocity,"red",10000,AMRAAMTexture);
+				spawnProjectile(10,30,position, velocity,"red",10000,BAMRAAMTexture);
 			}
 			counter = 0;
 
@@ -728,7 +732,7 @@ public class GameScreen implements Screen {
 	}
 	
 	private class FiringPattern3 extends timedEvent{
-		//Fires a barrage of 10 unguided missiles every 3 seconds
+		//Fires a barrage of 10 unguided missiles every second
 		private String MiGName;
 
 		void event(){
@@ -743,7 +747,7 @@ public class GameScreen implements Screen {
 			for (int i = 0; i < 10; i++){
 				velocity.rotateDeg(1);
 				// System.out.println(velocity.angleDeg()); //Debugging code
-				spawnProjectile(10,30,position, new Vector2(velocity.x,velocity.y),"red",10000,AMRAAMTexture);
+				spawnProjectile(10,30,position, new Vector2(velocity.x,velocity.y),"red",10000,BAMRAAMTexture);
 			}
 			counter = 0;
 
@@ -751,7 +755,7 @@ public class GameScreen implements Screen {
 
 		public FiringPattern3(String nameArg){
 			MiGName = nameArg;
-			delay = 3;
+			delay = 1;
 		}
 	}
 
@@ -789,7 +793,7 @@ public class GameScreen implements Screen {
 			this.offsetX = offsetX;
 			this.offsetY = offsetY;
 			this.degOffset = degOffset;
-			delay = 5;
+			delay = 3;
 		}
 	}
 	
@@ -818,9 +822,11 @@ public class GameScreen implements Screen {
 			trigEvents.add(new level3());
 			kill();
 		}
+
 		boolean condition(){
 			return enemies.isEmpty();
 		}
+
 	}
 
 	private class level3 extends triggeredEvent {
@@ -877,6 +883,7 @@ public class GameScreen implements Screen {
 		void event(){
 			game.setScreen(new WinScreen(game, score));
 		}
+
 		boolean condition(){
 			return enemies.isEmpty();
 		}
@@ -891,7 +898,6 @@ public class GameScreen implements Screen {
 		void event(){
 			Actor sprey = findEnemy(name);
 			sprey.texture = AngrySpreyTexture;
-			timedEvents.add(new FiringPattern3(sprey.name));
 			kill();
 		}
 
@@ -911,7 +917,7 @@ public class GameScreen implements Screen {
 	private class chaseX extends constantEvent {
 		// makes enemy chase the player
 		private String enemyName; // name of enemy chasing the player
-		private int speed; //speed in pixels per second
+		private int speed; //speed multiplier
 		
 		void event(){
 			Actor enemy = findEnemy(enemyName);

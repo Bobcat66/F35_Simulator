@@ -28,7 +28,8 @@ public class MainMenuScreen implements Screen {
         camera.update();
 
         game.batch.begin();
-        game.font.draw(game.batch, "Welcome to the 100% Accurate F35 Combat Simulator", 100, 150);
+        game.font.draw(game.batch, "Welcome to the 100% Accurate F35 Combat Simulator, Now with Over 5 Levels!", 100, 200);
+        game.font.draw(game.batch, "Instructions: move you mouse around to move the plane, left click to fire the cannon, right click to fire the missile",100,150);
 		game.font.draw(game.batch, "Tap anywhere to begin", 100, 100);
 		game.batch.end();
 
