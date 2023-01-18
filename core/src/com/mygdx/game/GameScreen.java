@@ -554,6 +554,7 @@ public class GameScreen implements Screen {
 		backgroundMusic.dispose();
 		MIG21Texture.dispose();
 		SpreyTexture.dispose();
+		AngrySpreyTexture.dispose();
 	}
 
     @Override
